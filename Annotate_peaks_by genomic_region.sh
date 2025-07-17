@@ -104,10 +104,4 @@ echo "Upstream Peaks: $upstream"
 echo "Downstream Peaks: $downstream"
 echo "Intergenic Peaks (inferred): $intergenic"
 
-#-------------------------------------#
-# 6. (Optional) Per-Chromosome Report #
-#-------------------------------------#
-# Run additional script (if available)
-# ./Peakanno_per_chr_CE.sh
-# Outputs: peak_annotation_table.txt, peak_annotation_percentages.txt
 

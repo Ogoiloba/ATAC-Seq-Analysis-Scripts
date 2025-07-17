@@ -17,7 +17,7 @@ This set of scripts performs an analysis on syntenic gene pairs across Contigs i
 
 # 3. `Merge_Peaks.sh`
 - Extracts peak data from ATAC-seq datasets.
-- Merges overlapping peaks within 10bp and intersects them with gene coordinates.
+- Merges all peaks associated with each gene, so that each gene is represented by a single cumulative peak region..
 - Collapses peak signals for each gene and creates final peak summary files:
   - `final_Contig0_overlaps_CE.bed`
   - `final_Contig21_overlaps_CE.bed`

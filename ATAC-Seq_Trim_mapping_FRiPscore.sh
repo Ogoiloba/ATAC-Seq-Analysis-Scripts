@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: Ogo Iloba
-# Description: Full ATAC-seq pipeline for Dataset A with actual file paths. This same script was used for the other datasets.
+# Description: Full ATAC-seq pipeline for library A with actual file paths. This same script was used for the other datasets.
 # Input: Raw paired-end FASTQ files
 # Output: BAM files, peaks, and FRiP score
 
@@ -46,7 +46,7 @@ samtools view -bS datasetA_BWA_mapped_reads.sam > datasetA_BWA_mapped_reads.bam
 samtools flagstat datasetA_BWA_mapped_reads.bam > datasetA_flagstat.txt
 
 #-------------------------------#
-# 3. FILTER & DEDUPLICATION     #
+# 3. REMOVE PCR DUPLICATES     #
 #-------------------------------#
 samtools view -h -q 30 datasetA_BWA_mapped_reads.bam | \
   samtools view -b -o datasetA_BWA_mapped_qreads.bam
@@ -75,9 +75,9 @@ samtools sort -n -O bam -o datasetA_BWA_qreads_markdup_shiftSortN.bam datasetA_B
 samtools stats datasetA_BWA_qreads_markdup.bam > datasetA_BWA_qreads_markdup_summary.txt
 samtools stats datasetA_BWA_qreads_markdup_shiftSortN.bam > datasetA_BWA_qreads_markdup_shiftSortN_summary.txt
 
-#----------------------#
-# 6. PEAK CALLING      #
-#----------------------#
+#-----------------------------------------------#
+# 6. PEAK CALLING & MERGE PEAKS < 10bp APART    #
+#-----------------------------------------------#
 mkdir -p peak_calling
 cd peak_calling
 
@@ -106,8 +106,8 @@ percentage=$(echo "$fraction * 100" | bc)
 
 echo "Dataset A FRiP Report"
 echo "---------------------"
-echo "Total reads: $total_reads"
-echo "Reads in peaks: $reads_in_peaks"
+echo "Total mapped reads: $total_reads"
+echo "Reads found in peaks: $reads_in_peaks"
 echo "Fraction of reads in peaks: $fraction"
 echo "Percentage of reads in peaks: $percentage%"
 

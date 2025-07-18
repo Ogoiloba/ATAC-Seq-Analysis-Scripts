@@ -4,9 +4,8 @@
 # Input: Raw paired-end FASTQ files
 # Output: BAM files, peaks, and FRiP score
 
-#----------------------#
-#      SETUP          #
-#----------------------#
+
+#SETUP          
 
 # Raw data
 RAW_R1="/media/CLG2018/ogoiloba/ATAC-seq/Xuan_2_NS_S30_L002_R1_001.fastq"
@@ -21,9 +20,9 @@ WORK_DIR="/media/CLG2018/ogoiloba/ATAC-seq"
 
 mkdir -p "$TRIM_DIR"
 
-#----------------------#
-# 1. TRIMMING          #
-#----------------------#
+
+#1. TRIMMING        
+
 trim_galore --paired --fastqc --gzip --length 15 -q 20 -j 1 \
   --basename trim -o "$TRIM_DIR" "$RAW_R1" "$RAW_R2"
 
@@ -35,9 +34,8 @@ cd "$WORK_DIR"
 gzip -d trim_val_1.fq.gz
 gzip -d trim_val_2.fq.gz
 
-#----------------------#
-# 2. ALIGNMENT         #
-#----------------------#
+
+# 2. ALIGNMENT      
 bwa mem "$GENOME" trim_val_1.fq trim_val_2.fq -t 24 > datasetA_BWA_mapped_reads.sam
 
 samtools view -bS datasetA_BWA_mapped_reads.sam > datasetA_BWA_mapped_reads.bam
@@ -45,9 +43,8 @@ samtools view -bS datasetA_BWA_mapped_reads.sam > datasetA_BWA_mapped_reads.bam
 # Alignment stats
 samtools flagstat datasetA_BWA_mapped_reads.bam > datasetA_flagstat.txt
 
-#-------------------------------#
-# 3. REMOVE PCR DUPLICATES     #
-#-------------------------------#
+
+# 3. REMOVE PCR DUPLICATES    
 samtools view -h -q 30 datasetA_BWA_mapped_reads.bam | \
   samtools view -b -o datasetA_BWA_mapped_qreads.bam
 
@@ -56,17 +53,15 @@ samtools fixmate -m datasetA_BWA_qreads_sorted.bam datasetA_BWA_qreads_fixmate.b
 samtools sort -o datasetA_BWA_qreads_positionsort.bam datasetA_BWA_qreads_fixmate.bam
 samtools markdup -r -s datasetA_BWA_qreads_positionsort.bam datasetA_BWA_qreads_markdup.bam
 
-#----------------------#
-# 4. ATAC SHIFT        #
-#----------------------#
+
+# 4. ATAC SHIFT        
 samtools index datasetA_BWA_qreads_markdup.bam
 alignmentSieve --ATACshift --bam datasetA_BWA_qreads_markdup.bam -o datasetA_BWA_qreads_markdup_shift.bam
 
 cp datasetA_BWA_qreads_markdup_shift.bam "$TRIM_DIR"
 
-#-------------------------------#
-# 5. FINAL SORTING + STATS      #
-#-------------------------------#
+
+# 5. FINAL SORTING + STATS     
 cd "$TRIM_DIR"
 samtools sort -O bam -o datasetA_BWA_qreads_markdup_shiftSort.bam datasetA_BWA_qreads_markdup_shift.bam
 samtools index datasetA_BWA_qreads_markdup_shiftSort.bam
@@ -75,9 +70,8 @@ samtools sort -n -O bam -o datasetA_BWA_qreads_markdup_shiftSortN.bam datasetA_B
 samtools stats datasetA_BWA_qreads_markdup.bam > datasetA_BWA_qreads_markdup_summary.txt
 samtools stats datasetA_BWA_qreads_markdup_shiftSortN.bam > datasetA_BWA_qreads_markdup_shiftSortN_summary.txt
 
-#-----------------------------------------------#
-# 6. PEAK CALLING & MERGE PEAKS < 10bp APART    #
-#-----------------------------------------------#
+
+# 6. PEAK CALLING & MERGE PEAKS < 10bp APART    
 mkdir -p peak_calling
 cd peak_calling
 
@@ -90,9 +84,8 @@ grep -v "chr" datasetA_macs2_peaks.xls > DatasetA_Macs2_Peaks.xls
 
 bedtools merge -i DatasetA_Macs2_Peaks.xls -d 10 -c 4,5,6 -o sum,collapse,collapse > DatasetA_peaks_Lengths.bed
 
-#-------------------------------#
-# 7. FRiP SCORE CALCULATION     #
-#-------------------------------#
+
+# 7. FRiP SCORE CALCULATION     
 bedtools bamtobed -i ../datasetA_BWA_qreads_markdup_shiftSortN.bam > A_Atac_reads.bed
 sed 's/ \+/\t/g' A_Atac_reads.bed > DatasetA_Atac_reads.bed
 

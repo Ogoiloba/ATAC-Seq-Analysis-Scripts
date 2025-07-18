@@ -6,10 +6,8 @@
 # Input: GFF3 annotation file and MACS2 peak summits
 # Output: BED files of peaks in genomic regions and summary counts
 
-#------------------------------#
-# 1. Prepare Annotation Input  #
-#------------------------------#
 
+# 1. Prepare Annotation Input  
 # Extract relevant feature types
 grep -v "#" Ltri1.0_gene_models.gff3 | cut -f3 | sort | uniq
 
@@ -22,10 +20,8 @@ awk '$1 ~ /^Contig(2[0-7]|[0-1]?[0-9])$/' annotation_raw.bed > annotation_filter
 # Format: contig, start, end, feature
 awk '{print $1"\t"$3"\t"$4"\t"$2}' annotation_filtered.bed > annotation_formatted.bed
 
-#-----------------------------#
-# 2. Generate Genomic Regions #
-#-----------------------------#
 
+# 2. Generate Genomic Regions 
 # Exons
 awk '$4 == "exon"' annotation_formatted.bed > exons.bed
 
@@ -44,9 +40,8 @@ awk '{if ($4 == "+") print $1, ($2 - 1000 > 0 ? $2 - 1000 : 0), $2, $4; \
 awk '{if ($4 == "+") print $1, $3, $3 + 1000, $4; \
       else print $1, ($2 - 1000 > 0 ? $2 - 1000 : 0), $2, $4}' OFS='\t' genes_filtered.bed > downstream.bed
 
-#------------------------#
-# 3. Generate Introns    #
-#------------------------#
+
+# 3. Generate Introns  
 
 # Filter full GFF3 for Contigs 0–27
 awk '$1 ~ /^Contig([0-9]|1[0-9]|2[0-7])$/' Ltri1.0_gene_models.gff3 > annotation_contigs.gff3
@@ -65,9 +60,8 @@ awk '$3 == "gene" { print $1 "\t" $4-1 "\t" $5 "\t" $9 }' annotation_contigs.gff
 bedtools subtract -a genes.bed -b merged_exons_utrs.bed > raw_introns.bed
 awk '{print $1, $2, $3}' raw_introns.bed | sed 's/ \+/\t/g' > introns.bed
 
-#-------------------------------------#
-# 4. Prepare Peaks and Intersections  #
-#-------------------------------------#
+
+# 4. Prepare Peaks and Intersections 
 
 # From peak calling folder (e.g., C+E dataset)
 cut -f1,2,3 opt_macs2_summits.bed > peaks.bed
@@ -81,10 +75,8 @@ bedtools intersect -a filtered_peaks.bed -b introns.bed -wa > peaks_introns.bed
 bedtools intersect -a filtered_peaks.bed -b upstream.bed -wa > peaks_upstream.bed
 bedtools intersect -a filtered_peaks.bed -b downstream.bed -wa > peaks_downstream.bed
 
-#-------------------------------------#
-# 5. Calculate Counts & Intergenic    #
-#-------------------------------------#
 
+# 5. Calculate Counts & Intergenic  
 # Count peaks
 total=$(wc -l < filtered_peaks.bed)
 exon=$(wc -l < peaks_exons.bed)

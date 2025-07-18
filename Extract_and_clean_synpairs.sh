@@ -3,9 +3,9 @@
 # Project: ATAC-seq - Peak Length and Gene Expression Analysis (Datasets C & E)
 # Description: Step 1 - Extract syntenic gene pairs from SynMap data, remove duplicates, and map them to original synteny blocks.
 
-#---------------------------#
+
 # Step 1: Extract syntenic gene pairs with block info
-#---------------------------#
+
 awk '{if ($1 ~ /^#/) print $1, $3, $4, $5, $6; else print $5, $17}' Tab_Genocord_grpanalysis2.txt > Synteny_with_GenesOnly.txt
 
 # Keep only Contig0 - Contig21 pairs
@@ -20,9 +20,9 @@ grep "^#" 021_Synteny_with_GenesOnly.txt > header_names_021.txt
 # Sort and remove duplicated rows
 sort noheader_021_Synteny_with_GenesOnly.txt | uniq > sorted_noheader_021_Synteny_with_GenesOnly.txt
 
-#---------------------------#
+
 # Step 2: Remove duplicate gene pairs (many-to-one)
-#---------------------------#
+
 awk '{count1[$1]++; count2[$2]++; pairs[$1,$2]++} \
      END {for (key in pairs) {split(key, arr, SUBSEP); \
      if ((count1[arr[1]] == 1 && count2[arr[2]] == 1) || pairs[key] > 1) \
@@ -31,9 +31,9 @@ awk '{count1[$1]++; count2[$2]++; pairs[$1,$2]++} \
 # Convert to tab-delimited
 sed 's/ \+/\t/g' Duplicates_removed_021.txt > duplicate_genes_removed_021.txt
 
-#---------------------------#
+
 # Step 3: Map gene pairs back to synteny block headers
-#---------------------------#
+
 input_file="duplicate_genes_removed_021.txt"
 original_data="merged_GroupAB0_21"
 output_file="mapped_duplicate_genes_removed_021.txt"
